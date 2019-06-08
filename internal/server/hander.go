@@ -159,7 +159,7 @@ func (rh *RequestHandler) GetRoadmap(w http.ResponseWriter, r *http.Request) {
 		MilestonesOther: make([]ResponseMilestone, 0),
 	}
 
-	for _, m := range roadmap.MainMilestones {
+	for _, m := range roadmap.SortedMilestones {
 		rm := ResponseMilestone{
 			ID:          m.ID,
 			Description: m.Description,
