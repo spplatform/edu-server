@@ -2,9 +2,23 @@
 
 Fast and simple server
 
+## Constants
+
+### Statuses
+
+- 0 not started
+- 1 in progress
+- 2 finished
+- 3 failed
+
 ## Endpoints
 
-- `api/login`
+- [`api/login`](#api/login)
+- [`api/user/{id}`](#api/user/{id})
+- [`api/user/{id}/process-poll`](#api/user/{id}/process-poll)
+- [`api/roadmap/{id}`](#api/roadmap/{id})
+
+### api/login
 
 Request:
 ```json
@@ -61,7 +75,7 @@ Response:
 }
 ```
 
-- `api/user/{id}`
+### api/user/{id}
 
 Request:
 
@@ -76,7 +90,7 @@ Response:
 }
 ```
 
-- `api/user/{id}/process-poll`
+### api/user/{id}/process-poll
 
 Request:
 
@@ -102,3 +116,60 @@ Response:
 }
 ```
 
+### api/roadmap/{id}
+
+Request:
+
+id: numerical roadmap id
+
+Response:
+```json
+{
+    "id": 1234,
+    "description": "Ivan's Developer Roadmap",
+    "status": 1,
+    "milestones-main": [
+        {
+            "id": 324,
+            "description": "How to start",
+            "course-link": "https:example.com",
+            "status": 2,
+            "steps": [
+                {
+                    "id": 12343,
+                    "description": "How to start starting",
+                    "step-link": "https:example.com/12312",
+                    "status": 2
+                },
+                {
+                    "id": 32423,
+                    "description": "How to end starting",
+                    "step-link": "https:example.com/8798",
+                    "status": 2
+                }
+            ]
+        },
+        {
+            "id": 678,
+            "description": "How to finish",
+            "course-link": "https:example.com",
+            "status": 2,
+            "steps": [
+                {
+                    "id": 2342,
+                    "description": "How to start finishing",
+                    "step-link": "https:example.com/78987",
+                    "status": 2
+                },
+                {
+                    "id": 43567,
+                    "description": "How to end finishing",
+                    "step-link": "https:example.com/76832",
+                    "status": 0
+                }
+            ]
+        }
+    ],
+    "milestones-other": //same structure as milestones-main
+}
+```
