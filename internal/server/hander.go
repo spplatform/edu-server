@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 // RequestHandler is a main HTTP request handler
@@ -33,8 +36,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -42,8 +44,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		user, err = rh.lm.CreateUser(login.Login, login.Password)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		newUser = true
@@ -51,8 +52,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 	pollFirst, err1 := rh.lm.GetFirstPoll()
 	pollSecond, err2 := rh.lm.GetSecondPoll()
 	if err1 != nil || err2 != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, "failes on poll fetch")
+		http.Error(w, "fails on poll fetch", http.StatusInternalServerError)
 		return
 	}
 
@@ -76,8 +76,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	payload, err := json.Marshal(&resp)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -91,22 +90,19 @@ func (rh *RequestHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&userID)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	user, err := rh.lm.GetUser(userID.UserID)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, err)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
 	payload, err := json.Marshal(&user)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -120,15 +116,13 @@ func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&pollResult)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	roadmapID, err := rh.lm.ProcessPoll(pollResult)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(w, err)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -138,8 +132,59 @@ func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
 
 	payload, err := json.Marshal(&resp)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
+}
+
+func (rh *RequestHandler) GetRoadmap(w http.ResponseWriter, r *http.Request) {
+	rvars := mux.Vars(r)
+
+	id, _ := strconv.Atoi(rvars["id"])
+
+	roadmap, err := rh.lm.GetRoadmap(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	resp := ResponseRoadmap{
+		ID:              roadmap.ID,
+		Description:     roadmap.Description,
+		MilestonesMain:  make([]ResponseMilestone, 0),
+		MilestonesOther: make([]ResponseMilestone, 0),
+	}
+
+	for _, m := range roadmap.MainMilestones {
+		rm := ResponseMilestone{
+			ID:          m.ID,
+			Description: m.Description,
+			CourseLink:  m.Link,
+			Status:      m.Status,
+			Steps:       make([]ResponseStep, 0, len(m.Steps)),
+		}
+		for _, s := range m.Steps {
+			rm.Steps = append(rm.Steps, ResponseStep{
+				ID:          s.ID,
+				Description: s.Description,
+				StepLink:    s.Link,
+				Status:      s.Status,
+			})
+		}
+		if m.Main {
+			resp.MilestonesMain = append(resp.MilestonesMain, rm)
+		} else {
+			resp.MilestonesOther = append(resp.MilestonesOther, rm)
+		}
+	}
+
+	payload, err := json.Marshal(&resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -160,14 +205,9 @@ type (
 	}
 
 	RequestPoll struct {
-		AnswersFirst  map[int][]int `json:"answers"`
-		AnswersSecond map[int][]int `json:"answers"`
+		AnswersFirst  map[int][]int `json:"answers-first"`
+		AnswersSecond map[int][]int `json:"answers-second"`
 	}
-
-	// RequestAnswer struct {
-	// 	QuestionID int   `json:"question-id"`
-	// 	Answers    []int `json:"answer-ids"`
-	// }
 )
 
 // Responce structures
@@ -188,14 +228,16 @@ type (
 	ResponseRoadmap struct {
 		ID              int                 `json:"id"`
 		Description     string              `json:"description"`
-		MilestonesMain  []ResponseMilestone `json:"milestones"`
-		MilestonesOther []ResponseMilestone `json:"milestones"`
+		Status          int                 `json:"status"`
+		MilestonesMain  []ResponseMilestone `json:"milestones-main"`
+		MilestonesOther []ResponseMilestone `json:"milestones-other"`
 	}
 
 	ResponseMilestone struct {
 		ID          int            `json:"id"`
 		Description string         `json:"description"`
 		CourseLink  string         `json:"course-link"`
+		Status      int            `json:"status"`
 		Steps       []ResponseStep `json:"steps"`
 	}
 
@@ -203,6 +245,7 @@ type (
 		ID          int    `json:"id"`
 		Description string `json:"description"`
 		StepLink    string `json:"step-link,omitempty"`
+		Status      int    `json:"status"`
 	}
 
 	ResponseBadge struct {

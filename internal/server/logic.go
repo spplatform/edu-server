@@ -26,3 +26,7 @@ func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
 func (lm *LogicManager) ProcessPoll(poll RequestPoll) (int, error) {
 	return 0, nil
 }
+
+func (lm *LogicManager) GetRoadmap(id int) (*Roadmap, error) {
+	return &Roadmap{}, nil
+}

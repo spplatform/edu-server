@@ -39,6 +39,7 @@ type (
 		Status              int
 		MainMilestones      []Milestone
 		SecondaryMilestones []Milestone
+		SortedMilestones    []Milestone
 	}
 
 	Milestone struct {
