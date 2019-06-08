@@ -24,13 +24,11 @@ func Serve(host, port string) {
 
 	r.HandleFunc("/api/login", h.Login).Methods("GET", "POST")
 
-	r.HandleFunc("/api/user/", h.GetUser).Methods("GET")
-	// r.HandleFunc("/api/user", h.).Methods("POST")
+	r.HandleFunc("/api/user/{id:[0-9]+}", h.GetUser).Methods("GET")
+	// r.HandleFunc("/api/user/{id:[0-9]+}/courses", h.).Methods("GET")
+	r.HandleFunc("/api/user/{id:[0-9]+}/process-poll", h.ProcessPolls).Methods("POST")
 
-	// r.HandleFunc("/api/poll", h.).Methods("GET")
-	r.HandleFunc("/api/process-poll", h.ProcessPolls).Methods("POST")
-
-	r.HandleFunc("/api/roadmap/{id}", h.GetRoadmap).Methods("GET")
+	r.HandleFunc("/api/roadmap/{id:[0-9]+}", h.GetRoadmap).Methods("GET")
 	// r.HandleFunc("/api/milestone", h.).Methods("GET")
 	// r.HandleFunc("/api/step", h.).Methods("GET")
 	// r.HandleFunc("/api/", h.).Methods("GET")

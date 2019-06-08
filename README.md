@@ -61,3 +61,44 @@ Response:
 }
 ```
 
+- `api/user/{id}`
+
+Request:
+
+id: numerical user id
+
+Response:
+```json
+{
+    "id": 1,
+    "name": "my-name", //in development
+    "roadmap-ids": [1,2,3]
+}
+```
+
+- `api/user/{id}/process-poll`
+
+Request:
+
+id: numerical user id
+
+```json
+{
+    "answers-first": {
+        "1":[1],
+        "2":[3]
+    }, 
+    "answers-second": {
+        "4":[2],
+        "5":[1]
+    }
+}
+```
+
+Response:
+```json
+{
+    "roadmap-id": 22
+}
+```
+
