@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -24,7 +25,8 @@ func NewRequestHandler() *RequestHandler {
 // HandleHello handles hello requests
 func (rh *RequestHandler) HandleHello(w http.ResponseWriter, r *http.Request) {
 	log.Println("hello request")
-	fmt.Fprint(w, "Hello")
+	db_env := os.Getenv("DATABASE_URL")
+	fmt.Fprint(w, db_env)
 	w.WriteHeader(http.StatusOK)
 }
 
