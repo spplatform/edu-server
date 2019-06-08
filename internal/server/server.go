@@ -21,6 +21,23 @@ func Serve(host, port string) {
 	}
 
 	r.HandleFunc("/", h.HandleHello).Methods("GET")
+
+	r.HandleFunc("/api/login", h.Login).Methods("GET", "POST")
+
+	r.HandleFunc("/api/user/", h.GetUser).Methods("GET")
+	// r.HandleFunc("/api/user", h.).Methods("POST")
+
+	// r.HandleFunc("/api/poll", h.).Methods("GET")
+	r.HandleFunc("/api/answer_poll", h.ProcessPolls).Methods("POST")
+
+	// r.HandleFunc("/api/roadmap", h.).Methods("GET")
+	// r.HandleFunc("/api/milestone", h.).Methods("GET")
+	// r.HandleFunc("/api/step", h.).Methods("GET")
+	// r.HandleFunc("/api/", h.).Methods("GET")
+	// r.HandleFunc("/api/", h.).Methods("GET")
+	// r.HandleFunc("/api/", h.).Methods("GET")
+	// r.HandleFunc("/api/", h.).Methods("GET")
+
 	http.Handle(host+":"+port, r)
 
 	// handle interrupt

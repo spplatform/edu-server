@@ -9,5 +9,8 @@ import (
 func main() {
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
 	server.Serve(host, port)
 }
