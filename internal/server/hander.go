@@ -125,23 +125,27 @@ func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// user, err := rh.lm.ProcessPoll(pollRequest)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusNotFound)
-	// 	fmt.Fprint(w, err)
-	// 	return
-	// }
+	roadmapID, err := rh.lm.ProcessPoll(pollResult)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, err)
+		return
+	}
 
-	// payload, err := json.Marshal(&user)
-	// if err != nil {
-	// 	w.WriteHeader(http.StatusInternalServerError)
-	// 	fmt.Fprint(w, err)
-	// 	return
-	// }
+	resp := ResponsePollProcess{
+		RoadmapID: roadmapID,
+	}
 
-	// w.WriteHeader(http.StatusOK)
-	// w.Header().Set("Content-Type", "application/json")
-	// w.Write(payload)
+	payload, err := json.Marshal(&resp)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
 }
 
 // Request structures
@@ -174,10 +178,11 @@ type (
 		FirstPoll  *ResponsePoll `json:"first-poll,omitempty"`
 		SecondPoll *ResponsePoll `json:"second-poll,omitempty"`
 	}
+
 	ResponseUser struct {
-		ID       int               `json:"id"`
-		Name     string            `json:"name"`
-		Roadmaps []ResponseRoadmap `json:"roadmaps,omitempty"`
+		ID          int    `json:"id"`
+		Name        string `json:"name"`
+		RoadmapsIDs []int  `json:"roadmap-ids,omitempty"`
 	}
 
 	ResponseRoadmap struct {
@@ -226,5 +231,9 @@ type (
 		ID          int                `json:"id"`
 		Description string             `json:"description"`
 		Questions   []ResponseQuestion `json:"questions"`
+	}
+
+	ResponsePollProcess struct {
+		RoadmapID int `json:"roadmap-id"`
 	}
 )

@@ -23,6 +23,6 @@ func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
 	return &Poll{}, nil
 }
 
-func (lm *LogicManager) ProcessPoll(poll RequestPoll) (*User, error) {
-	return &User{}, nil
+func (lm *LogicManager) ProcessPoll(poll RequestPoll) (int, error) {
+	return 0, nil
 }
