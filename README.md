@@ -100,11 +100,10 @@ id: numerical user id
 {
     "answers-first": {
         "1":[1],
-        "2":[3]
+        "2":[2]
     }, 
     "answers-second": {
-        "4":[2],
-        "5":[1]
+        "1":[2,3]
     }
 }
 ```
