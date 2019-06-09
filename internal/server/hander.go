@@ -157,7 +157,7 @@ func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roadmapID, err := rh.lm.CreateRoadmap(pollResult)
+	roadmapID, err := rh.lm.CreateRoadmap(id, pollResult)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

@@ -201,28 +201,51 @@ func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error)
 		rm.SortedMilestones = presetRoadmaps[2]
 	}
 
+	inerestKeys := poll.AnswersSecond[1]
 	err := lm.db.Model(&interests).
+		Where("id in(?)", pg.In(inerestKeys)).
 		Select()
 	if err != nil {
 		return 0, err
 	}
 
-	selectedInterests := make(map[int]struct{})
-	for _, interestID := range poll.AnswersFirst[2] {
-		selectedInterests[interestID] = struct{}{}
-	}
-
 	for _, intr := range interests {
-		if _, ok := selectedInterests[intr.ID]; ok {
-			if intPreset, ok := presetInterests[intr.ID]; ok {
-				rm.SortedMilestones = append(rm.SortedMilestones, intPreset...)
-			}
+		if intPreset, ok := presetInterests[intr.ID]; ok {
+			rm.SortedMilestones = append(rm.SortedMilestones, intPreset...)
 		}
 	}
 
 	err = lm.db.Insert(&rm)
+	if err != nil {
+		return 0, err
+	}
 
-	return rm.ID, err
+	milestones := make([]*Milestone, 0)
+	for msIdx := range rm.SortedMilestones {
+		rm.SortedMilestones[msIdx].RoadmapID = rm.ID
+		milestones = append(milestones, &rm.SortedMilestones[msIdx])
+	}
+
+	err = lm.db.Insert(&milestones)
+	if err != nil {
+		return 0, err
+	}
+
+	steps := make([]*Step, 0)
+	for _, ms := range milestones {
+		for stIdx := range ms.Steps {
+			ms.Steps[stIdx].RoadmapID = rm.ID
+			ms.Steps[stIdx].MilestoneID = ms.ID
+			steps = append(steps, &ms.Steps[stIdx])
+		}
+	}
+
+	err = lm.db.Insert(&steps)
+	if err != nil {
+		return 0, err
+	}
+
+	return rm.ID, nil
 }
 
 func (lm *LogicManager) GetRoadmap(id int) (*Roadmap, error) {
