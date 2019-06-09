@@ -17,8 +17,8 @@ type RequestHandler struct {
 }
 
 // NewRequestHandler creates a new request handler with given set of dependencies
-func NewRequestHandler() *RequestHandler {
-	return &RequestHandler{}
+func NewRequestHandler(lm *LogicManager) *RequestHandler {
+	return &RequestHandler{lm}
 }
 
 // HandleHello handles hello requests

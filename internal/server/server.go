@@ -13,8 +13,13 @@ import (
 
 // Serve starts a server on the host and port specified
 func Serve(host, port string) {
+	lm, err := NewLogicManager()
+	if err != nil {
+		log.Fatal(err)
+	}
+	h := NewRequestHandler(lm)
+
 	r := mux.NewRouter()
-	h := NewRequestHandler()
 	srv := &http.Server{
 		Addr:    host + ":" + port,
 		Handler: r,

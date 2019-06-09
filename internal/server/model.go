@@ -1,6 +1,11 @@
 package server
 
-import "time"
+import (
+	"time"
+
+	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
+)
 
 const (
 	StatusNotStarted = iota
@@ -104,3 +109,29 @@ type (
 		UserID   int
 	}
 )
+
+func createSchema(db *pg.DB) error {
+	for _, model := range []interface{}{
+		(*User)(nil),
+		(*Poll)(nil),
+		(*PollQuestion)(nil),
+		(*PollAnswer)(nil),
+		(*Roadmap)(nil),
+		(*Milestone)(nil),
+		(*Step)(nil),
+		(*Course)(nil),
+		(*CourseInterest)(nil),
+		(*Interest)(nil),
+		(*Badge)(nil),
+		(*UserBadge)(nil),
+		(*Certificate)(nil),
+	} {
+		err := db.CreateTable(model, &orm.CreateTableOptions{
+			Temp: false,
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

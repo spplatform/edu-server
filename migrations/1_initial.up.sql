@@ -1,0 +1,13 @@
+CREATE TABLE "users" ("id" bigserial, "login" text, "password" text, "name" text, "roadmaps" jsonb, PRIMARY KEY ("id"));
+CREATE TABLE "polls" ("poll_id" bigserial, "description" text, PRIMARY KEY ("poll_id"));
+CREATE TABLE "poll_questions" ("poll_id" bigserial, "question_id" bigserial, "description" text, "answers" jsonb, PRIMARY KEY ("poll_id", "question_id"));
+CREATE TABLE "poll_answers" ("question_id" bigserial, "answer_id" bigserial, "description" text, PRIMARY KEY ("question_id", "answer_id"));
+CREATE TABLE "roadmaps" ("id" bigserial, "description" text, "status" bigint, PRIMARY KEY ("id"));
+CREATE TABLE "milestones" ("roadmap_id" bigserial, "id" bigserial, "main" boolean, "status" bigint, "order" bigint, "description" text, "course_id" bigint, "link" text, PRIMARY KEY ("roadmap_id", "id"));
+CREATE TABLE "steps" ("roadmap_id" bigserial, "milestone_id" bigserial, "id" bigserial, "status" bigint, "description" text, "link" text, PRIMARY KEY ("roadmap_id", "milestone_id", "id"));
+CREATE TABLE "courses" ("id" bigserial, "name" text, "link" text, "user_id" text, PRIMARY KEY ("id"));
+CREATE TABLE "course_interests" ("course_id" bigserial, "interest_id" bigserial, PRIMARY KEY ("course_id", "interest_id"));
+CREATE TABLE "interests" ("id" bigserial, "description" text, PRIMARY KEY ("id"));
+CREATE TABLE "badges" ("id" bigserial, "name" text, PRIMARY KEY ("id"));
+CREATE TABLE "user_badges" ("user_id" bigserial, "badge_id" bigserial, PRIMARY KEY ("user_id", "badge_id"));
+CREATE TABLE "certificates" ("id" bigserial, "name" text, "date_time" timestamptz, "user_id" bigint, PRIMARY KEY ("id"));

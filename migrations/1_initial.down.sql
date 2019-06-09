@@ -1,0 +1,13 @@
+DROP TABLE "users";
+DROP TABLE "polls";
+DROP TABLE "poll_questions";
+DROP TABLE "poll_answers";
+DROP TABLE "roadmaps";
+DROP TABLE "milestones";
+DROP TABLE "steps";
+DROP TABLE "courses";
+DROP TABLE "course_interests";
+DROP TABLE "interests";
+DROP TABLE "badges";
+DROP TABLE "user_badges";
+DROP TABLE "certificates";
