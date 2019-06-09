@@ -192,13 +192,12 @@ func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error)
 		Status: StatusNotStarted,
 	}
 
-	switch poll.AnswersFirst[1][0] {
-	case 1:
-		rm.Description = "Путь программиста"
-		rm.SortedMilestones = presetRoadmaps[1]
-	case 2:
-		rm.Description = "Путь дизайнера"
-		rm.SortedMilestones = presetRoadmaps[2]
+	switch skillID := poll.AnswersFirst[1][0]; skillID {
+	case 1, 2:
+		rm.Description = presetTitles[skillID]
+		rm.SortedMilestones = presetRoadmaps[skillID]
+	default:
+		return 0, fmt.Errorf("Specialization %d doesn't supported yet", skillID)
 	}
 
 	inerestKeys := poll.AnswersSecond[1]
@@ -249,6 +248,7 @@ func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error)
 }
 
 func (lm *LogicManager) GetRoadmap(id int) (*Roadmap, error) {
+
 	return &Roadmap{}, nil
 }
 

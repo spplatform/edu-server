@@ -1,5 +1,10 @@
 package server
 
+var presetTitles = map[int]string{
+	1: "Путь программиста",
+	2: "Путь дизайнера",
+}
+
 var presetRoadmaps = map[int][]Milestone{
 	1: []Milestone{
 		{

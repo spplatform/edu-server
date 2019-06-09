@@ -36,12 +36,6 @@ func Serve(host, port string) {
 	r.HandleFunc("/api/user/{id:[0-9]+}/process-poll", h.ProcessPolls).Methods("POST")
 
 	r.HandleFunc("/api/roadmap/{id:[0-9]+}", h.GetRoadmap).Methods("GET")
-	// r.HandleFunc("/api/milestone", h.).Methods("GET")
-	// r.HandleFunc("/api/step", h.).Methods("GET")
-	// r.HandleFunc("/api/", h.).Methods("GET")
-	// r.HandleFunc("/api/", h.).Methods("GET")
-	// r.HandleFunc("/api/", h.).Methods("GET")
-	// r.HandleFunc("/api/", h.).Methods("GET")
 
 	http.Handle(host+":"+port, r)
 
