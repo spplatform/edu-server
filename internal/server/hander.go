@@ -36,6 +36,8 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 		login    RequestLogin
 		roadmaps []int
 		newUser  bool
+		badges   []Badge
+		certs    []Certificate
 	)
 
 	err := json.NewDecoder(r.Body).Decode(&login)
@@ -64,6 +66,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		badges, certs = rh.lm.GetUserAwards(user.ID)
 	}
 	pollFirst, err1 := rh.lm.GetFirstPoll()
 	pollSecond, err2 := rh.lm.GetSecondPoll()
@@ -72,12 +75,23 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	badgeIDs := make([]int, 0, len(badges))
+	for _, b := range badges {
+		badgeIDs = append(badgeIDs, b.ID)
+	}
+	certIDs := make([]int, 0, len(certs))
+	for _, c := range certs {
+		certIDs = append(certIDs, c.ID)
+	}
+
 	// prepare response data
 	resp := ResponceLogin{
 		User: ResponseUser{
-			ID:          user.ID,
-			Name:        user.Name,
-			RoadmapsIDs: roadmaps,
+			ID:             user.ID,
+			Name:           user.Name,
+			RoadmapsIDs:    roadmaps,
+			BadgeIDs:       badgeIDs,
+			CertificateIDs: certIDs,
 		},
 		New: newUser,
 		FirstPoll: &ResponsePoll{
@@ -148,10 +162,22 @@ func (rh *RequestHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 
 	roadmaps, _ := rh.lm.GetUserRoadmaps(user.ID)
 
+	badges, certs := rh.lm.GetUserAwards(user.ID)
+	badgeIDs := make([]int, 0, len(badges))
+	for _, b := range badges {
+		badgeIDs = append(badgeIDs, b.ID)
+	}
+	certIDs := make([]int, 0, len(certs))
+	for _, c := range certs {
+		certIDs = append(certIDs, c.ID)
+	}
+
 	resp := ResponseUser{
-		ID:          user.ID,
-		Name:        user.Name,
-		RoadmapsIDs: roadmaps,
+		ID:             user.ID,
+		Name:           user.Name,
+		RoadmapsIDs:    roadmaps,
+		BadgeIDs:       badgeIDs,
+		CertificateIDs: certIDs,
 	}
 	payload, err := json.Marshal(&resp)
 	if err != nil {
@@ -408,9 +434,11 @@ type (
 	}
 
 	ResponseUser struct {
-		ID          int    `json:"id"`
-		Name        string `json:"name"`
-		RoadmapsIDs []int  `json:"roadmap-ids,omitempty"`
+		ID             int    `json:"id"`
+		Name           string `json:"name"`
+		RoadmapsIDs    []int  `json:"roadmap-ids,omitempty"`
+		BadgeIDs       []int  `json:"badge-ids,omitempty"`
+		CertificateIDs []int  `json:"certificate-ids,omitempty"`
 	}
 
 	ResponseRoadmap struct {

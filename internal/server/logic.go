@@ -392,6 +392,24 @@ func (lm *LogicManager) GetCertificate(id int) (*Certificate, error) {
 	return &cert, err
 }
 
+// GetUserAwards returns a lists of badges and certificates of user
+func (lm *LogicManager) GetUserAwards(id int) ([]Badge, []Certificate) {
+	var (
+		badges []Badge
+		certs  []Certificate
+	)
+
+	lm.db.Model(&badges).
+		Where("user_id = ?", id).
+		Select()
+
+	lm.db.Model(&certs).
+		Where("user_id = ?", id).
+		Select()
+
+	return badges, certs
+}
+
 // calculateHash generates a SHA1 hash for a string
 func calculateHash(base string) string {
 	h := sha1.New()
