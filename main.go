@@ -1,8 +1,10 @@
 package main
 
 import (
+	"log"
 	"os"
 
+	"github.com/spplatform/edu-server/internal/migration"
 	"github.com/spplatform/edu-server/internal/server"
 )
 
@@ -12,5 +14,20 @@ func main() {
 	if port == "" {
 		port = "8000"
 	}
-	server.Serve(host, port)
+	if len(os.Args) < 2 {
+		return
+	}
+
+	switch os.Args[1] {
+	case "migrate":
+		migration.Migrate("migrations", "init")
+		err := migration.Migrate("migrations", "up")
+		if err != nil {
+			log.Fatal(err)
+		}
+	case "serve":
+		server.Serve(host, port)
+	default:
+		log.Fatal("false operation")
+	}
 }

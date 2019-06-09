@@ -18,8 +18,8 @@ type RequestHandler struct {
 }
 
 // NewRequestHandler creates a new request handler with given set of dependencies
-func NewRequestHandler() *RequestHandler {
-	return &RequestHandler{}
+func NewRequestHandler(lm *LogicManager) *RequestHandler {
+	return &RequestHandler{lm}
 }
 
 // HandleHello handles hello requests
@@ -161,7 +161,7 @@ func (rh *RequestHandler) GetRoadmap(w http.ResponseWriter, r *http.Request) {
 		MilestonesOther: make([]ResponseMilestone, 0),
 	}
 
-	for _, m := range roadmap.MainMilestones {
+	for _, m := range roadmap.SortedMilestones {
 		rm := ResponseMilestone{
 			ID:          m.ID,
 			Description: m.Description,
