@@ -45,7 +45,9 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user, err := rh.lm.ReadUser(login.Login, login.Password)
-	if err != nil {
+	if err == ErrWrongPassword {
+		http.Error(w, err.Error(), http.StatusForbidden)
+	} else if err != nil {
 		user, err = rh.lm.CreateUser(login.Login, login.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

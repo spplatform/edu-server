@@ -2,6 +2,7 @@ package server
 
 import (
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -10,6 +11,9 @@ import (
 )
 
 type dbLogger struct{}
+
+// ErrWrongPassword wong user credentials
+var ErrWrongPassword = errors.New("Wrong user credentials")
 
 func (d dbLogger) BeforeQuery(q *pg.QueryEvent) {
 	return
@@ -55,12 +59,17 @@ func NewLogicManager() (*LogicManager, error) {
 }
 
 func (lm *LogicManager) ReadUser(login, password string) (*User, error) {
-	spass := calculateHash(password)
-
 	var user User
 	err := lm.db.Model(&user).
-		Where("login = ? AND password = ?", login, spass).
+		Where("login = ?", login).
 		Select()
+
+	if err != nil {
+		return nil, err
+	}
+	if user.Password != calculateHash(password) {
+		return nil, ErrWrongPassword
+	}
 
 	return &user, err
 }
