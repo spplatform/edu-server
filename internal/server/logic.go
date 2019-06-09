@@ -332,7 +332,7 @@ func (lm *LogicManager) CreateBadge(userID, roadmapID, milestoneID int) (*Badge,
 
 	badge := Badge{
 		UserID:   userID,
-		Name:     fmt.Sprintf("Курс %s пройден", m.Description),
+		Name:     fmt.Sprintf(`Курс '%s' пройден`, m.Description),
 		DateTime: time.Now(),
 	}
 
@@ -370,7 +370,7 @@ func (lm *LogicManager) CreateCertificate(userID, roadmapID int) (*Certificate, 
 
 	cert := Certificate{
 		UserID:   userID,
-		Name:     fmt.Sprintf("Специализация %s получена", r.Description),
+		Name:     fmt.Sprintf(`Специализация '%s' получена`, r.Description),
 		DateTime: time.Now(),
 	}
 

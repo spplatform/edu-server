@@ -13,12 +13,14 @@ Fast and simple server
 
 ## Endpoints
 
-- [`api/login`](#api/login)
-- [`api/user/{id}`](#api/user/{id})
-- [`api/user/{id}/process-poll`](#api/user/{id}/process-poll)
-- [`api/roadmap/{id}`](#api/roadmap/{id})
-
-### api/login
+- [POST: `api/login`](#api/login)
+- [GET: `api/user/{id}`](#api/user/{id})
+- [POST: `api/user/{id}/process-poll`](#api/user/{id}/process-poll)
+- [GET: `api/roadmap/{id}`](#api/roadmap/{id})
+- [GET: `api/badge/{id}`](#api/badge/{id})
+- [POST: `api/badge`](#api/badge)
+- [GET: `api/certificate/{id}`](#api/certificate/{id})
+- [POST: `api/certificate`](#api/certificate)
 
 Request:
 ```json
@@ -34,7 +36,9 @@ Response:
     "user": {
         "id": 1,
         "name": "my-name", //in development
-        "roadmap-ids": [1,2,3]
+        "roadmap-ids": [1,2,3],
+        "badge-ids": [4,5,6],
+        "certificate-ids": [7,8,9]
     },
     "new": true,
     "first-poll": {
@@ -86,7 +90,9 @@ Response:
 {
     "id": 1,
     "name": "my-name", //in development
-    "roadmap-ids": [1,2,3]
+    "roadmap-ids": [1,2,3],
+	"badge-ids": [4,5,6],
+	"certificate-ids": [7,8,9]
 }
 ```
 
@@ -170,5 +176,74 @@ Response:
         }
     ],
     "milestones-other": //same structure as milestones-main
+}
+```
+
+### api/badge/{id}
+
+Request:
+
+id: numerical roadmap id
+
+Response:
+```json
+{
+	"id": 1,
+	"description": "Курс 'Основы программирования' пройден",
+	"issue-date-time": "2019-06-09T15:27:43.63046+03:00"
+}
+```
+
+### api/badge
+
+Request:
+```json
+{
+	"user-id": 1,
+	"roadmap-id": 3,
+	"milestone-id": 7
+}
+```
+
+Response:
+```json
+{
+	"id": 1,
+	"description": "Курс 'Основы программирования' пройден",
+	"issue-date-time": "2019-06-09T15:27:43.63046+03:00"
+}
+```
+
+### api/certificate/{id}
+
+Request:
+
+id: numerical roadmap id
+
+Response:
+```json
+{
+	"id": 1,
+	"description": "Специализация 'Путь программиста' получена",
+	"issue-date-time": "2019-06-09T15:30:27.323818+03:00"
+}
+```
+
+### api/certificate
+
+Request:
+```json
+{
+	"user-id": 1,
+	"roadmap-id": 3
+}
+```
+
+Response:
+```json
+{
+	"id": 1,
+	"description": "Специализация 'Путь программиста' получена",
+	"issue-date-time": "2019-06-09T15:30:27.323818+03:00"
 }
 ```
