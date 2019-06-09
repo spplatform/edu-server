@@ -27,12 +27,11 @@ func Serve(host, port string) {
 		Handler: rh,
 	}
 
-	r.HandleFunc("/", h.HandleHello).Methods("GET")
+	r.HandleFunc("/health", h.HandleHello).Methods("GET")
 
 	r.HandleFunc("/api/login", h.Login).Methods("GET", "POST")
 
 	r.HandleFunc("/api/user/{id:[0-9]+}", h.GetUser).Methods("GET")
-	// r.HandleFunc("/api/user/{id:[0-9]+}/courses", h.).Methods("GET")
 	r.HandleFunc("/api/user/{id:[0-9]+}/process-poll", h.ProcessPolls).Methods("POST")
 
 	r.HandleFunc("/api/roadmap/{id:[0-9]+}", h.GetRoadmap).Methods("GET")
@@ -48,6 +47,7 @@ func Serve(host, port string) {
 		srv.Shutdown(context.Background())
 	}()
 
+	// start server
 	if err := srv.ListenAndServe(); err != nil {
 		log.Println(err)
 	}

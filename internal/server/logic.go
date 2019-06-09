@@ -3,10 +3,8 @@ package server
 import (
 	"crypto/sha1"
 	"fmt"
-	"log"
 	"os"
 	"sort"
-	"time"
 
 	"github.com/go-pg/pg"
 )
@@ -36,8 +34,8 @@ func NewLogicManager() (*LogicManager, error) {
 	}
 
 	// Give the proxy time to wake up so we don't out-race it and fail to connect
-	log.Printf("waiting %d seconds to connect...", 5)
-	time.Sleep(time.Duration(5) * time.Second)
+	// log.Printf("waiting %d seconds to connect...", 5)
+	// time.Sleep(time.Duration(5) * time.Second)
 	db = pg.Connect(&opts)
 	db.AddQueryHook(dbLogger{})
 
@@ -183,6 +181,26 @@ func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
 	poll.Questions = []*PollQuestion{&question}
 
 	return &poll, nil
+}
+
+func (lm *LogicManager) GetUserRoadmaps(userID int) ([]int, error) {
+	var roadmaps []Roadmap
+
+	err := lm.db.Model(&roadmaps).
+		Column("id").
+		Where("user_id = ?", userID).
+		Select()
+
+	if err != nil {
+		return nil, err
+	}
+
+	res := make([]int, 0, len(roadmaps))
+	for _, r := range roadmaps {
+		res = append(res, r.ID)
+	}
+
+	return res, nil
 }
 
 func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error) {

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -22,18 +21,21 @@ func NewRequestHandler(lm *LogicManager) *RequestHandler {
 	return &RequestHandler{lm}
 }
 
-// HandleHello handles hello requests
+// HandleHello handles hello requests (health check)
 func (rh *RequestHandler) HandleHello(w http.ResponseWriter, r *http.Request) {
 	log.Println("hello request")
-	db_env := os.Getenv("DATABASE_URL")
-	fmt.Fprint(w, db_env)
+	fmt.Fprint(w, "hello")
 	w.WriteHeader(http.StatusOK)
 }
 
+// Login handles user login in one of several cases
+// - user exists: returns a user data
+// - new user: registers a user and returns a user data
 func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var (
-		login   RequestLogin
-		newUser bool
+		login    RequestLogin
+		roadmaps []int
+		newUser  bool
 	)
 
 	err := json.NewDecoder(r.Body).Decode(&login)
@@ -50,6 +52,12 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		newUser = true
+	} else {
+		roadmaps, err = rh.lm.GetUserRoadmaps(user.ID)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 	pollFirst, err1 := rh.lm.GetFirstPoll()
 	pollSecond, err2 := rh.lm.GetSecondPoll()
@@ -60,8 +68,9 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	resp := ResponceLogin{
 		User: ResponseUser{
-			ID:   user.ID,
-			Name: user.Name,
+			ID:          user.ID,
+			Name:        user.Name,
+			RoadmapsIDs: roadmaps,
 		},
 		New: newUser,
 		FirstPoll: &ResponsePoll{
@@ -120,21 +129,23 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rh *RequestHandler) GetUser(w http.ResponseWriter, r *http.Request) {
-	var userID RequestUserKey
+	rvars := mux.Vars(r)
+	id, _ := strconv.Atoi(rvars["id"])
 
-	err := json.NewDecoder(r.Body).Decode(&userID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	user, err := rh.lm.GetUser(userID.UserID)
+	user, err := rh.lm.GetUser(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	payload, err := json.Marshal(&user)
+	roadmaps, _ := rh.lm.GetUserRoadmaps(user.ID)
+
+	resp := ResponseUser{
+		ID:          user.ID,
+		Name:        user.Name,
+		RoadmapsIDs: roadmaps,
+	}
+	payload, err := json.Marshal(&resp)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
