@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/go-pg/pg"
@@ -248,8 +249,42 @@ func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error)
 }
 
 func (lm *LogicManager) GetRoadmap(id int) (*Roadmap, error) {
+	var (
+		roadmap    Roadmap
+		milestones []Milestone
+		steps      []Step
+	)
 
-	return &Roadmap{}, nil
+	err := lm.db.Model(&roadmap).
+		Where("id = ?", id).
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	lm.db.Model(&milestones).
+		Where("roadmap_id = ?", id).
+		Select()
+
+	lm.db.Model(&steps).
+		Where("roadmap_id = ?", id).
+		Select()
+
+	for msIdx, ms := range milestones {
+		for _, st := range steps {
+			if st.MilestoneID == ms.ID {
+				milestones[msIdx].Steps = append(milestones[msIdx].Steps, st)
+			}
+		}
+	}
+
+	sort.SliceStable(milestones, func(i, j int) bool {
+		return milestones[i].Order < milestones[j].Order
+	})
+
+	roadmap.SortedMilestones = milestones
+
+	return &roadmap, nil
 }
 
 func calculateHash(base string) string {
