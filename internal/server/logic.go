@@ -78,15 +78,110 @@ func (lm *LogicManager) CreateUser(login, password string) (*User, error) {
 }
 
 func (lm *LogicManager) GetUser(id int) (*User, error) {
-	return &User{}, nil
+	var user User
+
+	err := lm.db.Model(&user).
+		Where("id = ?", id).
+		Select()
+
+	return &user, err
 }
 
 func (lm *LogicManager) GetFirstPoll() (*Poll, error) {
-	return &Poll{}, nil
+	var (
+		poll      Poll
+		questions []*PollQuestion
+		answers   []PollAnswer
+	)
+
+	err := lm.db.Model(&poll).
+		Where("poll_id = 1").
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	err = lm.db.Model(&questions).
+		Where("poll_id = 1").
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	questionIDs := make([]int, 0, len(questions))
+	for _, q := range questions {
+		questionIDs = append(questionIDs, q.QuestionID)
+	}
+
+	err = lm.db.Model(&answers).
+		Where("poll_id = 1 AND question_id IN (?)", pg.In(questionIDs)).
+		Select()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// type answerKey struct {
+	// 	question, answer int
+	// }
+
+	// namedAnswers := make(map[answerKey]*PollAnswer)
+	// for idx, a := range answers {
+	// 	namedAnswers[answerKey{a.QuestionID, a.AnswerID}] = &answers[idx]
+	// }
+
+	for _, q := range questions {
+		for idx, a := range answers {
+			if a.QuestionID == q.QuestionID {
+				q.Answers = append(q.Answers, &answers[idx])
+			}
+		}
+	}
+
+	poll.Questions = questions
+
+	return &p, err
 }
 
 func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
-	return &Poll{}, nil
+	var (
+		poll      Poll
+		question  PollQuestion
+		interests []Interest
+	)
+
+	err := lm.db.Model(&poll).
+		Where("poll_id = 2").
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	err = lm.db.Model(&question).
+		Where("poll_id = 2").
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	err = lm.db.Model(&interests).
+		Select()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, intr := range interests {
+		question.Answers = append(question.Answers, &PollAnswer{
+			PollID:      question.PollID,
+			QuestionID:  question.QuestionID,
+			AnswerID:    intr.ID,
+			Description: intr.Description,
+		})
+	}
+
+	poll.Questions = []*PollQuestion{&question}
+
+	return &poll, nil
 }
 
 func (lm *LogicManager) ProcessPoll(poll RequestPoll) (int, error) {
