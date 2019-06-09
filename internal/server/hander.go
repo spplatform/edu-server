@@ -67,13 +67,45 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 		FirstPoll: &ResponsePoll{
 			ID:          pollFirst.PollID,
 			Description: pollFirst.Description,
-			Questions:   []ResponseQuestion{},
+			Questions:   make([]ResponseQuestion, 0, len(pollFirst.Questions)),
 		},
 		SecondPoll: &ResponsePoll{
 			ID:          pollSecond.PollID,
 			Description: pollSecond.Description,
-			Questions:   []ResponseQuestion{},
+			Questions:   make([]ResponseQuestion, 0, len(pollSecond.Questions)),
 		},
+	}
+
+	for _, q := range pollFirst.Questions {
+		answers := make([]ResponseAnswer, 0, len(q.Answers))
+		for _, a := range q.Answers {
+			answers = append(answers, ResponseAnswer{
+				ID:          a.AnswerID,
+				Description: a.Description,
+			})
+		}
+
+		resp.FirstPoll.Questions = append(resp.FirstPoll.Questions, ResponseQuestion{
+			ID:          q.QuestionID,
+			Description: q.Description,
+			Answers:     answers,
+		})
+	}
+
+	for _, q := range pollSecond.Questions {
+		answers := make([]ResponseAnswer, 0, len(q.Answers))
+		for _, a := range q.Answers {
+			answers = append(answers, ResponseAnswer{
+				ID:          a.AnswerID,
+				Description: a.Description,
+			})
+		}
+
+		resp.SecondPoll.Questions = append(resp.SecondPoll.Questions, ResponseQuestion{
+			ID:          q.QuestionID,
+			Description: q.Description,
+			Answers:     answers,
+		})
 	}
 
 	payload, err := json.Marshal(&resp)
@@ -114,6 +146,9 @@ func (rh *RequestHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
+	rvars := mux.Vars(r)
+	id, _ := strconv.Atoi(rvars["id"])
+
 	var pollResult RequestPoll
 
 	err := json.NewDecoder(r.Body).Decode(&pollResult)
@@ -122,7 +157,7 @@ func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	roadmapID, err := rh.lm.ProcessPoll(pollResult)
+	roadmapID, err := rh.lm.CreateRoadmap(pollResult)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -20,9 +21,10 @@ func Serve(host, port string) {
 	h := NewRequestHandler(lm)
 
 	r := mux.NewRouter()
+	rh := handlers.RecoveryHandler()(r)
 	srv := &http.Server{
 		Addr:    host + ":" + port,
-		Handler: r,
+		Handler: rh,
 	}
 
 	r.HandleFunc("/", h.HandleHello).Methods("GET")

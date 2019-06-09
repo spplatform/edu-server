@@ -34,7 +34,7 @@ type (
 		PollID      int `sql:",pk"`
 		QuestionID  int `sql:",pk"`
 		Description string
-		Answers     []*PollAnswer `sql:"-"`
+		Answers     []PollAnswer `sql:"-"`
 	}
 
 	PollAnswer struct {
@@ -47,8 +47,9 @@ type (
 	Roadmap struct {
 		ID               int `sql:",pk"`
 		Description      string
+		UserID           int
 		Status           int
-		SortedMilestones []*Milestone
+		SortedMilestones []Milestone `sql:"-"`
 	}
 
 	Milestone struct {
@@ -60,7 +61,7 @@ type (
 		Description string
 		CourseID    int
 		Link        string
-		Steps       []*Step
+		Steps       []Step `sql:"-"`
 	}
 
 	Step struct {

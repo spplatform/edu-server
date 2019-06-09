@@ -133,14 +133,14 @@ func (lm *LogicManager) GetFirstPoll() (*Poll, error) {
 	for _, q := range questions {
 		for idx, a := range answers {
 			if a.QuestionID == q.QuestionID {
-				q.Answers = append(q.Answers, &answers[idx])
+				q.Answers = append(q.Answers, answers[idx])
 			}
 		}
 	}
 
 	poll.Questions = questions
 
-	return &p, err
+	return &poll, err
 }
 
 func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
@@ -171,7 +171,7 @@ func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
 	}
 
 	for _, intr := range interests {
-		question.Answers = append(question.Answers, &PollAnswer{
+		question.Answers = append(question.Answers, PollAnswer{
 			PollID:      question.PollID,
 			QuestionID:  question.QuestionID,
 			AnswerID:    intr.ID,
@@ -184,8 +184,45 @@ func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
 	return &poll, nil
 }
 
-func (lm *LogicManager) ProcessPoll(poll RequestPoll) (int, error) {
-	return 0, nil
+func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error) {
+	var interests []Interest
+
+	rm := Roadmap{
+		UserID: userID,
+		Status: StatusNotStarted,
+	}
+
+	switch poll.AnswersFirst[1][0] {
+	case 1:
+		rm.Description = "Путь программиста"
+		rm.SortedMilestones = presetRoadmaps[1]
+	case 2:
+		rm.Description = "Путь дизайнера"
+		rm.SortedMilestones = presetRoadmaps[2]
+	}
+
+	err := lm.db.Model(&interests).
+		Select()
+	if err != nil {
+		return 0, err
+	}
+
+	selectedInterests := make(map[int]struct{})
+	for _, interestID := range poll.AnswersFirst[2] {
+		selectedInterests[interestID] = struct{}{}
+	}
+
+	for _, intr := range interests {
+		if _, ok := selectedInterests[intr.ID]; ok {
+			if intPreset, ok := presetInterests[intr.ID]; ok {
+				rm.SortedMilestones = append(rm.SortedMilestones, intPreset...)
+			}
+		}
+	}
+
+	err = lm.db.Insert(&rm)
+
+	return rm.ID, err
 }
 
 func (lm *LogicManager) GetRoadmap(id int) (*Roadmap, error) {
