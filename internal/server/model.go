@@ -93,15 +93,10 @@ type (
 	}
 
 	Badge struct {
-		ID   int `sql:",pk"`
-		Name string
-	}
-
-	UserBadge struct {
-		UserID  int `sql:",pk"`
-		User    *User
-		BadgeID int `sql:",pk"`
-		Badge   *Badge
+		ID       int `sql:",pk"`
+		Name     string
+		DateTime time.Time
+		UserID   int
 	}
 
 	Certificate struct {

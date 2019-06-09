@@ -8,6 +8,5 @@ CREATE TABLE "steps" ("roadmap_id" bigserial, "milestone_id" bigserial, "id" big
 CREATE TABLE "courses" ("id" bigserial, "name" text, "link" text, "user_id" text, PRIMARY KEY ("id"));
 CREATE TABLE "course_interests" ("course_id" bigserial, "interest_id" bigserial, PRIMARY KEY ("course_id", "interest_id"));
 CREATE TABLE "interests" ("id" bigserial, "description" text, PRIMARY KEY ("id"));
-CREATE TABLE "badges" ("id" bigserial, "name" text, PRIMARY KEY ("id"));
-CREATE TABLE "user_badges" ("user_id" bigserial, "badge_id" bigserial, PRIMARY KEY ("user_id", "badge_id"));
+CREATE TABLE "badges" ("id" bigserial, "name" text, "date_time" timestamptz, "user_id" bigint, PRIMARY KEY ("id"));
 CREATE TABLE "certificates" ("id" bigserial, "name" text, "date_time" timestamptz, "user_id" bigint, PRIMARY KEY ("id"));

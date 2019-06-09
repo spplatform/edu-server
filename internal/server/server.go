@@ -36,6 +36,12 @@ func Serve(host, port string) {
 
 	r.HandleFunc("/api/roadmap/{id:[0-9]+}", h.GetRoadmap).Methods("GET")
 
+	r.HandleFunc("/api/badge/{id:[0-9]+}", h.GetBadge).Methods("GET")
+	r.HandleFunc("/api/badge", h.IssueBadge).Methods("POST")
+
+	r.HandleFunc("/api/certificate/{id:[0-9]+}", h.GetCertificate).Methods("GET")
+	r.HandleFunc("/api/certificate", h.IssueCertificate).Methods("POST")
+
 	http.Handle(host+":"+port, r)
 
 	// handle interrupt

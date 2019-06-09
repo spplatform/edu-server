@@ -40,14 +40,17 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&login)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// try to read existing user
 	user, err := rh.lm.ReadUser(login.Login, login.Password)
 	if err == ErrWrongPassword {
+		// wrong password
 		http.Error(w, err.Error(), http.StatusForbidden)
 	} else if err != nil {
+		// create a new user
 		user, err = rh.lm.CreateUser(login.Login, login.Password)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -55,6 +58,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		newUser = true
 	} else {
+		// get existing user info
 		roadmaps, err = rh.lm.GetUserRoadmaps(user.ID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -68,6 +72,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// prepare response data
 	resp := ResponceLogin{
 		User: ResponseUser{
 			ID:          user.ID,
@@ -130,6 +135,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+// GetUser returns a user information
 func (rh *RequestHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	rvars := mux.Vars(r)
 	id, _ := strconv.Atoi(rvars["id"])
@@ -158,6 +164,7 @@ func (rh *RequestHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+// ProcessPolls processes poll answers and generates new roadmap
 func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
 	rvars := mux.Vars(r)
 	id, _ := strconv.Atoi(rvars["id"])
@@ -166,7 +173,7 @@ func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&pollResult)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -191,9 +198,9 @@ func (rh *RequestHandler) ProcessPolls(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+// GetRoadmap returns a roadmap
 func (rh *RequestHandler) GetRoadmap(w http.ResponseWriter, r *http.Request) {
 	rvars := mux.Vars(r)
-
 	id, _ := strconv.Atoi(rvars["id"])
 
 	roadmap, err := rh.lm.GetRoadmap(id)
@@ -243,20 +250,100 @@ func (rh *RequestHandler) GetRoadmap(w http.ResponseWriter, r *http.Request) {
 	w.Write(payload)
 }
 
+// IssueBadge creates a new badge
+func (rh *RequestHandler) IssueBadge(w http.ResponseWriter, r *http.Request) {
+	var req RequestBadge
+
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	badge, err := rh.lm.CreateBadge(req.UserID, req.RoadmapID, req.MilestoneID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := ResponseBadge{
+		ID:            badge.ID,
+		Description:   badge.Name,
+		IssueDateTime: badge.DateTime,
+	}
+
+	payload, err := json.Marshal(&resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
+}
+
+// GetBadge returns a badge by id
+func (rh *RequestHandler) GetBadge(w http.ResponseWriter, r *http.Request) {
+	rvars := mux.Vars(r)
+	id, _ := strconv.Atoi(rvars["id"])
+
+	badge, err := rh.lm.GetBadge(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	resp := ResponseBadge{
+		ID:            badge.ID,
+		Description:   badge.Name,
+		IssueDateTime: badge.DateTime,
+	}
+
+	payload, err := json.Marshal(&resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
+}
+
+// IssueCertificate creates a new certificate
+func (rh *RequestHandler) IssueCertificate(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// GetCertificate returns a certificate by id
+func (rh *RequestHandler) GetCertificate(w http.ResponseWriter, r *http.Request) {
+
+}
+
 // Request structures
 type (
+	// RequestLogin is a login request data set
 	RequestLogin struct {
 		Login    string `json:"login"`
 		Password string `json:"passwors"`
 	}
 
-	RequestUserKey struct {
-		UserID int `json:"user-id"`
-	}
-
+	// RequestPoll is a poll processing request data set
 	RequestPoll struct {
 		AnswersFirst  map[int][]int `json:"answers-first"`
 		AnswersSecond map[int][]int `json:"answers-second"`
+	}
+
+	RequestBadge struct {
+		UserID      int `json:"user-id"`
+		RoadmapID   int `json:"roadmap-id"`
+		MilestoneID int `json:"milestone-id"`
+	}
+
+	RequestCertificate struct {
+		UserID    int `json:"user-id"`
+		RoadmapID int `json:"roadmap-id"`
 	}
 )
 
@@ -299,8 +386,9 @@ type (
 	}
 
 	ResponseBadge struct {
-		ID          int    `json:"id"`
-		Description string `json:"description"`
+		ID            int       `json:"id"`
+		Description   string    `json:"description"`
+		IssueDateTime time.Time `json:"issue-date-time"`
 	}
 
 	ResponceCertificate struct {

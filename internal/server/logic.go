@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/go-pg/pg"
 )
@@ -20,6 +21,7 @@ func (d dbLogger) BeforeQuery(q *pg.QueryEvent) {
 }
 
 func (d dbLogger) AfterQuery(q *pg.QueryEvent) {
+	// debug SQL output
 	fmt.Println(q.FormattedQuery())
 }
 
@@ -58,6 +60,7 @@ func NewLogicManager() (*LogicManager, error) {
 	return &LogicManager{db}, nil
 }
 
+// ReadUser reads user information by user login and password
 func (lm *LogicManager) ReadUser(login, password string) (*User, error) {
 	var user User
 	err := lm.db.Model(&user).
@@ -74,6 +77,7 @@ func (lm *LogicManager) ReadUser(login, password string) (*User, error) {
 	return &user, err
 }
 
+// CreateUser creates a new user
 func (lm *LogicManager) CreateUser(login, password string) (*User, error) {
 	user := User{
 		Login:    login,
@@ -85,6 +89,7 @@ func (lm *LogicManager) CreateUser(login, password string) (*User, error) {
 	return &user, err
 }
 
+// GetUser returns a user by id
 func (lm *LogicManager) GetUser(id int) (*User, error) {
 	var user User
 
@@ -95,6 +100,7 @@ func (lm *LogicManager) GetUser(id int) (*User, error) {
 	return &user, err
 }
 
+// GetFirstPoll returns a first poll
 func (lm *LogicManager) GetFirstPoll() (*Poll, error) {
 	var (
 		poll      Poll
@@ -129,15 +135,6 @@ func (lm *LogicManager) GetFirstPoll() (*Poll, error) {
 		return nil, err
 	}
 
-	// type answerKey struct {
-	// 	question, answer int
-	// }
-
-	// namedAnswers := make(map[answerKey]*PollAnswer)
-	// for idx, a := range answers {
-	// 	namedAnswers[answerKey{a.QuestionID, a.AnswerID}] = &answers[idx]
-	// }
-
 	for _, q := range questions {
 		for idx, a := range answers {
 			if a.QuestionID == q.QuestionID {
@@ -151,6 +148,7 @@ func (lm *LogicManager) GetFirstPoll() (*Poll, error) {
 	return &poll, err
 }
 
+// GetSecondPoll returns a second poll
 func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
 	var (
 		poll      Poll
@@ -192,6 +190,7 @@ func (lm *LogicManager) GetSecondPoll() (*Poll, error) {
 	return &poll, nil
 }
 
+// GetUserRoadmaps returns a list of roadmap IDs of user
 func (lm *LogicManager) GetUserRoadmaps(userID int) ([]int, error) {
 	var roadmaps []Roadmap
 
@@ -212,6 +211,7 @@ func (lm *LogicManager) GetUserRoadmaps(userID int) ([]int, error) {
 	return res, nil
 }
 
+// CreateRoadmap generates and saves a new roadmap
 func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error) {
 	var interests []Interest
 
@@ -228,9 +228,9 @@ func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error)
 		return 0, fmt.Errorf("Specialization %d doesn't supported yet", skillID)
 	}
 
-	inerestKeys := poll.AnswersSecond[1]
+	interestKeys := poll.AnswersSecond[1]
 	err := lm.db.Model(&interests).
-		Where("id in(?)", pg.In(inerestKeys)).
+		Where("id in(?)", pg.In(interestKeys)).
 		Select()
 	if err != nil {
 		return 0, err
@@ -275,6 +275,7 @@ func (lm *LogicManager) CreateRoadmap(userID int, poll RequestPoll) (int, error)
 	return rm.ID, nil
 }
 
+// GetRoadmap returns a roadmap by id
 func (lm *LogicManager) GetRoadmap(id int) (*Roadmap, error) {
 	var (
 		roadmap    Roadmap
@@ -312,6 +313,45 @@ func (lm *LogicManager) GetRoadmap(id int) (*Roadmap, error) {
 	roadmap.SortedMilestones = milestones
 
 	return &roadmap, nil
+}
+
+// CreateBadge creates new badge based on milestone data
+func (lm *LogicManager) CreateBadge(userID, roadmapID, milestoneID int) (*Badge, error) {
+	m := Milestone{
+		RoadmapID: roadmapID,
+		ID:        milestoneID,
+	}
+
+	err := lm.db.Model(&m).
+		WherePK().
+		Select()
+
+	if err != nil {
+		return nil, err
+	}
+
+	badge := Badge{
+		UserID:   userID,
+		Name:     fmt.Sprintf("Курс %s пройден", m.Description),
+		DateTime: time.Now(),
+	}
+
+	err = lm.db.Insert(&badge)
+
+	return &badge, err
+}
+
+// GetBadge returns badge by id
+func (lm *LogicManager) GetBadge(id int) (*Badge, error) {
+	badge := Badge{
+		ID: id,
+	}
+
+	err := lm.db.Model(&badge).
+		WherePK().
+		Select()
+
+	return &badge, err
 }
 
 func calculateHash(base string) string {
