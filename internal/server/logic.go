@@ -354,9 +354,48 @@ func (lm *LogicManager) GetBadge(id int) (*Badge, error) {
 	return &badge, err
 }
 
+// CreateCertificate creates new certificate based on roadmap data
+func (lm *LogicManager) CreateCertificate(userID, roadmapID int) (*Certificate, error) {
+	r := Roadmap{
+		ID: roadmapID,
+	}
+
+	err := lm.db.Model(&r).
+		WherePK().
+		Select()
+
+	if err != nil {
+		return nil, err
+	}
+
+	cert := Certificate{
+		UserID:   userID,
+		Name:     fmt.Sprintf("Специализация %s получена", r.Description),
+		DateTime: time.Now(),
+	}
+
+	err = lm.db.Insert(&cert)
+
+	return &cert, err
+}
+
+// GetCertificate returns certificate by di
+func (lm *LogicManager) GetCertificate(id int) (*Certificate, error) {
+	cert := Certificate{
+		ID: id,
+	}
+
+	err := lm.db.Model(&cert).
+		WherePK().
+		Select()
+
+	return &cert, err
+}
+
+// calculateHash generates a SHA1 hash for a string
 func calculateHash(base string) string {
 	h := sha1.New()
 	h.Write([]byte(base))
 	bs := h.Sum(nil)
-	return fmt.Sprintf("%x\n", bs)
+	return fmt.Sprintf("%x", bs)
 }

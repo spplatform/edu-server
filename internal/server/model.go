@@ -120,7 +120,6 @@ func createSchema(db *pg.DB) error {
 		(*CourseInterest)(nil),
 		(*Interest)(nil),
 		(*Badge)(nil),
-		(*UserBadge)(nil),
 		(*Certificate)(nil),
 	} {
 		err := db.CreateTable(model, &orm.CreateTableOptions{

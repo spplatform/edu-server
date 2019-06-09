@@ -313,12 +313,63 @@ func (rh *RequestHandler) GetBadge(w http.ResponseWriter, r *http.Request) {
 
 // IssueCertificate creates a new certificate
 func (rh *RequestHandler) IssueCertificate(w http.ResponseWriter, r *http.Request) {
+	var req RequestCertificate
 
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	cert, err := rh.lm.CreateCertificate(req.UserID, req.RoadmapID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	resp := ResponceCertificate{
+		ID:            cert.ID,
+		Description:   cert.Name,
+		IssueDateTime: cert.DateTime,
+	}
+
+	payload, err := json.Marshal(&resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
 }
 
 // GetCertificate returns a certificate by id
 func (rh *RequestHandler) GetCertificate(w http.ResponseWriter, r *http.Request) {
+	rvars := mux.Vars(r)
+	id, _ := strconv.Atoi(rvars["id"])
 
+	cert, err := rh.lm.GetCertificate(id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	resp := ResponceCertificate{
+		ID:            cert.ID,
+		Description:   cert.Name,
+		IssueDateTime: cert.DateTime,
+	}
+
+	payload, err := json.Marshal(&resp)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(payload)
 }
 
 // Request structures
