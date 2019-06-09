@@ -1,7 +1,7 @@
-CREATE TABLE "users" ("id" bigserial, "login" text, "password" text, "name" text, "roadmaps" jsonb, PRIMARY KEY ("id"));
+CREATE TABLE "users" ("id" bigserial, "login" text, "password" text, "name" text, PRIMARY KEY ("id"));
 CREATE TABLE "polls" ("poll_id" bigserial, "description" text, PRIMARY KEY ("poll_id"));
-CREATE TABLE "poll_questions" ("poll_id" bigserial, "question_id" bigserial, "description" text, "answers" jsonb, PRIMARY KEY ("poll_id", "question_id"));
-CREATE TABLE "poll_answers" ("question_id" bigserial, "answer_id" bigserial, "description" text, PRIMARY KEY ("question_id", "answer_id"));
+CREATE TABLE "poll_questions" ("poll_id" bigserial, "question_id" bigserial, "description" text, PRIMARY KEY ("poll_id", "question_id"));
+CREATE TABLE "poll_answers" ("poll_id" bigserial, "question_id" bigserial, "answer_id" bigserial, "description" text, PRIMARY KEY ("poll_id", "question_id", "answer_id"));
 CREATE TABLE "roadmaps" ("id" bigserial, "description" text, "status" bigint, PRIMARY KEY ("id"));
 CREATE TABLE "milestones" ("roadmap_id" bigserial, "id" bigserial, "main" boolean, "status" bigint, "order" bigint, "description" text, "course_id" bigint, "link" text, PRIMARY KEY ("roadmap_id", "id"));
 CREATE TABLE "steps" ("roadmap_id" bigserial, "milestone_id" bigserial, "id" bigserial, "status" bigint, "description" text, "link" text, PRIMARY KEY ("roadmap_id", "milestone_id", "id"));

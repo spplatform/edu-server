@@ -20,24 +20,25 @@ type (
 		Login    string
 		Password string
 		Name     string
-		Badges   []*Badge `pg:"many2many:user_badges"`
-		Roadmaps []*Roadmap
+		Badges   []*Badge   `pg:"many2many:user_badges"`
+		Roadmaps []*Roadmap `sql:"-"`
 	}
 
 	Poll struct {
 		PollID      int `sql:",pk"`
 		Description string
-		Questions   []*PollQuestion
+		Questions   []*PollQuestion `sql:"-"`
 	}
 
 	PollQuestion struct {
 		PollID      int `sql:",pk"`
 		QuestionID  int `sql:",pk"`
 		Description string
-		Answers     []*PollAnswer
+		Answers     []*PollAnswer `sql:"-"`
 	}
 
 	PollAnswer struct {
+		PollID      int `sql:",pk"`
 		QuestionID  int `sql:",pk"`
 		AnswerID    int `sql:",pk"`
 		Description string

@@ -1,1 +1,2 @@
-web: edu-server
+release: edu-server migrate
+web: edu-server serve
