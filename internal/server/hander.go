@@ -85,7 +85,7 @@ func (rh *RequestHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// prepare response data
-	resp := ResponceLogin{
+	resp := ResponseLogin{
 		User: ResponseUser{
 			ID:             user.ID,
 			Name:           user.Name,
@@ -403,7 +403,7 @@ type (
 	// RequestLogin is a login request data set
 	RequestLogin struct {
 		Login    string `json:"login"`
-		Password string `json:"passwors"`
+		Password string `json:"password"`
 	}
 
 	// RequestPoll is a poll processing request data set
@@ -426,7 +426,7 @@ type (
 
 // Responce structures
 type (
-	ResponceLogin struct {
+	ResponseLogin struct {
 		User       ResponseUser  `json:"user"`
 		New        bool          `json:"new"`
 		FirstPoll  *ResponsePoll `json:"first-poll,omitempty"`

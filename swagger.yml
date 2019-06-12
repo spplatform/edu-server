@@ -1,0 +1,141 @@
+swagger: "2.0"
+info: 
+  description: Spaten Education Server API
+  version: 1.0.0
+  title: Contracts Server API
+host: localhost
+basePath: /api
+schemes:
+  - http
+tags:
+- name: login
+  description: Login user
+- name: user
+  description: User related endpoints
+- name: achievements
+  description: User achievements
+
+paths:
+  /login:
+    post:
+      tags:
+      - login
+      summary: Login user to the app
+      description: Logins existing user or creates a new one. Returns a user information. For a new user will send a set of questions
+      # security:
+      #   - Bearer: []
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: login
+        schema:
+          $ref: "#/definitions/RequestLogin"
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: "#/definitions/ResponseLogin"
+        400:
+          description: invalid request
+        403:
+          description: forbidden
+        500:
+          description: internal error
+
+definitions:
+  RequestLogin:
+    type: object
+    required:
+    - login
+    - password
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+
+  ResponseLogin:
+    type: object
+    required:
+      - user
+      - new
+    properties:
+      user:
+        $ref: "#/definitions/ResponseUser"
+      new:
+        type: boolean
+      first-poll:
+        type: array
+        items:
+          $ref: "#/definitions/ResponsePoll"
+      second-poll:
+        type: array
+        items:
+          $ref: "#/definitions/ResponsePoll"
+
+  ResponseUser:
+    type: object
+    required:
+      - id
+      - name
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      roadmap-ids:
+        type: array
+        items:
+          type: integer
+      badge-ids:
+        type: array
+        items:
+          type: integer
+      certificate-ids:
+        type: array
+        items:
+          type: integer
+
+  ResponsePoll:
+    type: object
+    required:
+      - id
+      - description
+      - questions
+    properties:
+      id:
+        type: string
+      description:
+        type: string
+      questions:
+        type: array
+        items:
+          $ref: "#/definitions/ResponseQuestion"
+
+  ResponseQuestion:
+    type: object
+    required:
+      - id
+      - description
+      - answers
+    properties:
+      id:
+        type: string
+      description:
+        type: string
+      answers:
+        type: array
+        items:
+          $ref: "#/definitions/ResponseAnswer"
+
+  ResponseAnswer:
+    type: object
+    required:
+      - id
+      - description
+    properties:
+      id:
+        type: string
+      description:
+        type: string

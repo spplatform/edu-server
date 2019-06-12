@@ -25,7 +25,7 @@ Fast and simple server
 Request:
 ```json
 {
-    "login": "my-login",
+    "login":    "my-login",
     "password": "my-password"
 }
 ```
