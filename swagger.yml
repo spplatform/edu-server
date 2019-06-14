@@ -114,7 +114,7 @@ paths:
         name: id
         type: integer
         required: true
-        description: Numeric ID of the user
+        description: Numeric ID of the roadmap
       responses:
         200:
           description: successful operation
@@ -125,7 +125,52 @@ paths:
         500:
           description: internal error
 
-        
+  /badge/{id}:
+    get:
+      tags:
+      - achievements
+      summary: Get badge
+      description: Returns existing badge
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: Numeric ID of the badge
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: "#/definitions/ResponseBadge"
+        404:
+          description: not found
+        500:
+          description: internal error
+
+  /badge:
+    post:
+      tags:
+      - achievements
+      summary: Create badge
+      description: Returns created badge
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: badge
+        schema:
+          $ref: "#/definitions/RequestBadge"
+      responses:
+        201:
+          description: created
+          schema:
+            $ref: "#/definitions/ResponseBadge"
+        400:
+          description: bad request
+        500:
+          description: internal error
         
 
 definitions:
@@ -156,6 +201,20 @@ definitions:
     additionalProperties:
       type: array
       items:
+        type: integer
+
+  RequestBadge:
+    type: object
+    required:
+      - user-id
+      - roadmap-id
+      - milestone-id
+    properties:
+      user-id:
+        type: integer
+      roadmap-id:
+        type: integer
+      milestone-id:
         type: integer
 
   ResponseLogin:
@@ -251,3 +310,17 @@ definitions:
       roadmap-id:
         type: integer
 
+  ResponseBadge:
+    type: object
+    required:
+      - id
+      - description
+      - issue-date-time
+    properties:
+      id:
+        type: integer
+      description:
+        type: string
+      issue-date-time:
+        type: string
+        format: date-time
