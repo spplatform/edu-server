@@ -353,7 +353,7 @@ func (rh *RequestHandler) IssueCertificate(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	resp := ResponceCertificate{
+	resp := ResponseCertificate{
 		ID:            cert.ID,
 		Description:   cert.Name,
 		IssueDateTime: cert.DateTime,
@@ -381,7 +381,7 @@ func (rh *RequestHandler) GetCertificate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	resp := ResponceCertificate{
+	resp := ResponseCertificate{
 		ID:            cert.ID,
 		Description:   cert.Name,
 		IssueDateTime: cert.DateTime,
@@ -470,7 +470,7 @@ type (
 		IssueDateTime time.Time `json:"issue-date-time"`
 	}
 
-	ResponceCertificate struct {
+	ResponseCertificate struct {
 		ID            int       `json:"id"`
 		Description   string    `json:"description"`
 		IssueDateTime time.Time `json:"issue-date-time"`

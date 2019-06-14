@@ -171,6 +171,53 @@ paths:
           description: bad request
         500:
           description: internal error
+
+  /certificate/{id}:
+    get:
+      tags:
+      - achievements
+      summary: Get certificate
+      description: Returns existing certificate
+      produces:
+      - application/json
+      parameters:
+      - in: path
+        name: id
+        type: integer
+        required: true
+        description: Numeric ID of the certificate
+      responses:
+        200:
+          description: successful operation
+          schema:
+            $ref: "#/definitions/ResponseCertificate"
+        404:
+          description: not found
+        500:
+          description: internal error
+
+  /certificate:
+    post:
+      tags:
+      - achievements
+      summary: Create certificate
+      description: Returns created certificate
+      produces:
+      - application/json
+      parameters:
+      - in: body
+        name: certificate
+        schema:
+          $ref: "#/definitions/RequestCertificate"
+      responses:
+        201:
+          description: created
+          schema:
+            $ref: "#/definitions/ResponseCertificate"
+        400:
+          description: bad request
+        500:
+          description: internal error
         
 
 definitions:
@@ -215,6 +262,17 @@ definitions:
       roadmap-id:
         type: integer
       milestone-id:
+        type: integer
+
+  RequestCertificate:
+    type: object
+    required:
+      - user-id
+      - roadmap-id
+    properties:
+      user-id:
+        type: integer
+      roadmap-id:
         type: integer
 
   ResponseLogin:
@@ -311,6 +369,21 @@ definitions:
         type: integer
 
   ResponseBadge:
+    type: object
+    required:
+      - id
+      - description
+      - issue-date-time
+    properties:
+      id:
+        type: integer
+      description:
+        type: string
+      issue-date-time:
+        type: string
+        format: date-time
+
+  ResponseCertificate:
     type: object
     required:
       - id
